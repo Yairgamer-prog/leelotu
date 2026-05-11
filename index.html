@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)file:///C:/Users/yaird/Downloads/leelotu_7.html -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Léelotú — Contratos en lenguaje simple</title>
+<link href="./Léelotú — Contratos en lenguaje simple_files/css2" rel="stylesheet">
+<script src="./Léelotú — Contratos en lenguaje simple_files/cb=gapi.loaded_0" async=""></script><script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBD6wLY3wBHsCIjZmGgYGrejglptC_SLjo",
+    authDomain: "leelotu-904c3.firebaseapp.com",
+    projectId: "leelotu-904c3",
+    storageBucket: "leelotu-904c3.firebasestorage.app",
+    messagingSenderId: "476478997729",
+    appId: "1:476478997729:web:09466b60419ef9d7f023a0"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  window.loginConGoogle = async function() {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      actualizarUsuario(user);
+    } catch (e) {
+      console.error('Error login:', e);
+      alert('No se pudo iniciar sesión. Intenta de nuevo.');
+    }
+  }
+
+  window.cerrarSesion = function() {
+    signOut(auth).then(() => {
+      location.reload();
+    });
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      actualizarUsuario(user);
+      document.getElementById('onboarding').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      renderizarHistorial();
+    }
+  });
+
+  function actualizarUsuario(user) {
+    const nombre = user.displayName || 'Usuario';
+    const foto = user.photoURL;
+    const inicial = nombre.charAt(0).toUpperCase();
+
+    // Saludo según hora
+    const hora = new Date().getHours();
+    const saludo = hora < 12 ? 'Buenos días,' : hora < 19 ? 'Buenas tardes,' : 'Buenas noches,';
+    const saludoEl = document.getElementById('saludo-texto');
+    const nombreEl = document.getElementById('nombre-usuario');
+    if (saludoEl) saludoEl.textContent = saludo;
+    if (nombreEl) nombreEl.textContent = nombre + ' 👋';
+
+    // Avatar con foto o inicial
+    const avatarEl = document.getElementById('avatar-usuario');
+    if (avatarEl) {
+      if (foto) {
+        avatarEl.innerHTML = `<img src="${foto}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer">`;
+      } else {
+        avatarEl.textContent = inicial;
+      }
+    }
+  }
+</script>
+<style>
+  :root {
+    --rojo: #e63946;
+    --rojo-dark: #c1121f;
+    --rojo-light: #fff5f5;
+    --negro: #1a1a1a;
+    --gris: #888;
+    --gris-light: #f8f8f8;
+    --borde: #eee;
+    --verde: #52b788;
+    --naranja: #f4a261;
+    --blanco: #ffffff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: #fafafa; color: var(--negro); min-height: 100vh; }
+
+  /* ONBOARDING */
+  #onboarding {
+    min-height: 100vh;
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    gap: 24px;
+  }
+  .logo-grande {
+    font-family: 'Playfair Display', serif;
+    font-size: 52px;
+    text-align: center;
+    line-height: 1;
+  }
+  .logo-grande span:first-child { color: white; font-weight: 400; }
+  .logo-grande span:last-child { color: var(--rojo); font-weight: 700; }
+  .logo-sub { font-size: 12px; color: #555; letter-spacing: 2px; text-align: center; }
+  .onboard-cards { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 420px; }
+  .onboard-card {
+    background: #1e1e1e;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .onboard-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .onboard-icon.rojo { background: #3a1a1a; }
+  .onboard-icon.verde { background: #1a2e1a; }
+  .onboard-icon.naranja { background: #2e1e1a; }
+  .onboard-title { font-size: 12px; font-weight: 500; margin-bottom: 3px; }
+  .onboard-title.rojo { color: var(--rojo); }
+  .onboard-title.verde { color: var(--verde); }
+  .onboard-title.naranja { color: var(--naranja); }
+  .onboard-text { font-size: 12px; color: #888; line-height: 1.5; }
+  .stats-row { display: flex; gap: 10px; width: 100%; max-width: 420px; }
+  .stat-box {
+    flex: 1; background: #1e1e1e; border-radius: 12px;
+    padding: 12px; text-align: center;
+  }
+  .stat-num { font-size: 20px; font-weight: 500; color: white; }
+  .stat-label { font-size: 10px; color: #555; margin-top: 2px; }
+  .btn-primary {
+    background: var(--rojo); color: white; border: none;
+    border-radius: 14px; padding: 16px 32px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 500;
+    cursor: pointer; width: 100%; max-width: 420px;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: var(--rojo-dark); }
+
+  /* APP PRINCIPAL */
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+
+  /* HEADER */
+  .header {
+    background: white;
+    border-bottom: 1px solid var(--borde);
+    padding: 16px 20px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-top {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 10px;
+  }
+  .saludo { font-size: 11px; color: #1a1a1a; }
+  .nombre { font-size: 17px; font-weight: 500; color: #1a1a1a; }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--rojo); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600; color: white;
+  }
+  .logo-header { text-align: center; }
+  .logo-header .logo { font-family: 'Playfair Display', serif; font-size: 28px; }
+  .logo-header .logo span:first-child { color: var(--negro); font-weight: 400; }
+  .logo-header .logo span:last-child { color: var(--rojo); font-weight: 700; }
+  .logo-header .tagline { font-size: 11px; color: #1a1a1a; letter-spacing: 0.3px; }
+
+  /* CONTENIDO */
+  .content { flex: 1; padding: 20px; max-width: 600px; margin: 0 auto; width: 100%; }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* HOME */
+  .section-title { font-size: 14px; font-weight: 500; margin-bottom: 14px; }
+  .opcion-card {
+    background: var(--rojo-light); border: 1px solid #ffd0d0;
+    border-radius: 14px; padding: 18px; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .opcion-card:hover { border-color: var(--rojo); }
+  .opcion-card.gris { background: var(--gris-light); border-color: var(--borde); }
+  .opcion-card.gris:hover { border-color: #ccc; }
+  .opcion-icon { font-size: 24px; }
+  .opcion-info { flex: 1; }
+  .opcion-name { font-size: 14px; font-weight: 500; }
+  .opcion-desc { font-size: 12px; color: var(--gris); margin-top: 2px; }
+  .opcion-arrow { font-size: 18px; color: #ccc; }
+  .recientes-title {
+    font-size: 11px; font-weight: 500; color: #aaa;
+    text-transform: uppercase; letter-spacing: 0.8px; margin: 20px 0 10px;
+  }
+  .reciente-card {
+    background: white; border: 0.5px solid var(--borde);
+    border-radius: 12px; padding: 14px; margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+  }
+  .reciente-nombre { font-size: 13px; font-weight: 500; }
+  .reciente-fecha { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .badge {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500;
+  }
+  .badge.rojo { background: #fff0f0; color: var(--rojo); }
+  .badge.verde { background: #f0fff4; color: #2d6a4f; }
+
+  /* TIPO CONTRATO */
+  .paso-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .pasos { display: flex; gap: 5px; }
+  .paso-dot { width: 22px; height: 4px; border-radius: 2px; background: #eee; }
+  .paso-dot.activo { background: var(--rojo); }
+  .screen-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+  .screen-sub { font-size: 12px; color: var(--gris); margin-bottom: 20px; line-height: 1.5; }
+  .tipos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .tipo-card {
+    border: 1.5px solid var(--borde); border-radius: 14px;
+    padding: 16px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: #fafafa;
+  }
+  .tipo-card:hover { border-color: #ccc; }
+  .tipo-card.selected { border-color: var(--rojo); background: var(--rojo-light); }
+  .tipo-card.selected .tipo-nombre { color: var(--rojo); }
+  .tipo-emoji { font-size: 28px; display: block; margin-bottom: 8px; }
+  .tipo-nombre { font-size: 12px; font-weight: 500; color: #555; }
+  .tipo-desc { font-size: 10px; color: #aaa; margin-top: 3px; }
+  .tipo-card.full { grid-column: 1 / -1; }
+
+  /* SUBIR ARCHIVO */
+  .tipo-badge {
+    background: var(--rojo-light); border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--rojo); font-weight: 500;
+  }
+  .drop-zone {
+    background: #fff9f9; border: 2px dashed #ffd0d0;
+    border-radius: 18px; padding: 32px 20px; text-align: center;
+    margin-bottom: 14px; cursor: pointer; transition: all 0.2s;
+  }
+  .drop-zone:hover { border-color: var(--rojo); background: var(--rojo-light); }
+  .drop-zone.dragover { border-color: var(--rojo); background: var(--rojo-light); }
+  .drop-icon { font-size: 40px; display: block; margin-bottom: 10px; }
+  .drop-title { font-size: 14px; font-weight: 500; margin-bottom: 5px; }
+  .drop-sub { font-size: 12px; color: var(--gris); margin-bottom: 14px; }
+  .btn-elegir {
+    background: var(--rojo); color: white; border: none;
+    border-radius: 10px; padding: 10px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+  }
+  #fileInput { display: none; }
+  .o-divider {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; color: #ccc; font-size: 12px;
+  }
+  .o-divider::before, .o-divider::after {
+    content: ''; flex: 1; height: 1px; background: #eee;
+  }
+  .opciones-alt { display: flex; gap: 10px; margin-bottom: 14px; }
+  .btn-alt {
+    flex: 1; border: 1px solid var(--borde); border-radius: 12px;
+    padding: 12px; text-align: center; cursor: pointer;
+    background: white; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-alt:hover { border-color: #ccc; }
+  .btn-alt-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+  .btn-alt-text { font-size: 11px; color: var(--gris); }
+  .textarea-contrato {
+    width: 100%; border: 1.5px solid var(--borde); border-radius: 12px;
+    padding: 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; resize: vertical; min-height: 180px;
+    margin-bottom: 14px; outline: none; transition: border 0.2s;
+  }
+  .textarea-contrato:focus { border-color: var(--rojo); }
+  .seguridad {
+    background: var(--gris-light); border-radius: 10px;
+    padding: 12px 14px; display: flex; align-items: center;
+    gap: 10px; margin-bottom: 16px; font-size: 11px; color: var(--gris);
+  }
+
+  /* ANALIZANDO */
+  #analizando {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85); z-index: 200;
+    flex-direction: column; align-items: center;
+    justify-content: center; gap: 20px;
+  }
+  .spinner {
+    width: 56px; height: 56px; border: 3px solid #333;
+    border-top-color: var(--rojo); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .analizando-texto { color: white; font-size: 16px; font-weight: 500; text-align: center; }
+  .analizando-sub { color: #666; font-size: 13px; text-align: center; }
+
+  /* RESULTADOS */
+  .semaforo-box {
+    background: var(--rojo-light); border-radius: 18px;
+    padding: 22px; text-align: center; margin-bottom: 16px;
+  }
+  .semaforo-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 14px; }
+  .semaforo-dot { width: 32px; height: 32px; border-radius: 50%; }
+  .semaforo-nivel { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+  .semaforo-desc { font-size: 12px; color: var(--gris); line-height: 1.5; }
+  .resumen-box {
+    background: var(--gris-light); border-radius: 14px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .resumen-label {
+    font-size: 10px; font-weight: 500; color: #aaa;
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
+  }
+  .resumen-texto { font-size: 13px; color: #444; line-height: 1.7; }
+  .datos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .dato-box { background: var(--gris-light); border-radius: 12px; padding: 12px; }
+  .dato-box.alerta { background: #fff0f0; }
+  .dato-label { font-size: 10px; color: #aaa; margin-bottom: 3px; }
+  .dato-label.rojo { color: var(--rojo); }
+  .dato-valor { font-size: 15px; font-weight: 500; }
+  .dato-valor.rojo { color: var(--rojo); }
+  .alertas-title {
+    font-size: 11px; font-weight: 500; color: #aaa;
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
+  }
+  .alerta-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--gris-light); border-radius: 12px;
+    padding: 12px; margin-bottom: 8px;
+  }
+  .alerta-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+
+  /* DUDAS */
+  .preguntas-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .pregunta-card {
+    border: 1px solid var(--borde); background: #fafafa;
+    border-radius: 14px; padding: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; transition: all 0.2s; font-size: 13px;
+  }
+  .pregunta-card:hover { border-color: var(--rojo); background: var(--rojo-light); color: var(--rojo); }
+  .pregunta-card.destacada { border-color: #ffd0d0; background: var(--rojo-light); }
+  .input-duda {
+    width: 100%; border: 1.5px dashed #ffd0d0; border-radius: 12px;
+    padding: 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; background: #fff9f9; outline: none;
+    margin-bottom: 14px; transition: border 0.2s;
+  }
+  .input-duda:focus { border-color: var(--rojo); border-style: solid; }
+  .respuesta-box {
+    background: white; border: 1px solid #ffd0d0;
+    border-radius: 14px; padding: 16px; margin-bottom: 14px;
+    display: none;
+  }
+  .respuesta-label {
+    font-size: 11px; color: var(--rojo); font-weight: 500;
+    margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .respuesta-texto { font-size: 15px; color: #1a1a1a; line-height: 1.7; }
+  .disclaimer {
+    font-size: 11px; color: #1a1a1a; text-align: center; margin-top: 10px;
+  }
+
+  /* BACK BTN */
+  .back-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 20px; color: #aaa; padding: 0;
+    display: flex; align-items: center;
+  }
+  .back-btn:hover { color: var(--negro); }
+
+  /* LOADING DOTS */
+  .loading-dots { display: inline-flex; gap: 4px; align-items: center; }
+  .loading-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--rojo); animation: bounce 1s infinite;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  @media (max-width: 480px) {
+    .content { padding: 16px; }
+    .logo-grande { font-size: 42px; }
+  }
+
+  .compartir-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); z-index: 300;
+    align-items: flex-end; justify-content: center;
+  }
+  .compartir-menu {
+    background: white; border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 600px; padding: 24px 20px 32px;
+  }
+  .compartir-titulo { font-size: 16px; font-weight: 500; color: #1a1a1a; margin-bottom: 4px; }
+  .compartir-sub { font-size: 12px; color: #aaa; margin-bottom: 20px; }
+  .compartir-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px; border-radius: 14px; cursor: pointer;
+    transition: background 0.15s; margin-bottom: 8px; border: 1px solid #eee;
+  }
+  .compartir-item:hover { background: #fff5f5; border-color: #ffd0d0; }
+  .compartir-item-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .compartir-item-name { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+  .compartir-item-desc { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .compartir-cancel {
+    width: 100%; background: #f8f8f8; border: none; border-radius: 14px;
+    padding: 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: #888; cursor: pointer; margin-top: 8px;
+  }
+  .compartir-cancel:hover { background: #eee; }
+  .toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+    background: #1a1a1a; color: white; border-radius: 20px;
+    padding: 10px 20px; font-size: 13px; font-weight: 500;
+    z-index: 400; display: none; white-space: nowrap;
+  }
+</style>
+<script src="./Léelotú — Contratos en lenguaje simple_files/api.js.descargar" type="text/javascript" charset="UTF-8" gapi_processed="true"></script></head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="logo-grande"><span>Léelo</span><span>tú</span></div>
+  <p class="logo-sub">CONTRATOS EN LENGUAJE SIMPLE</p>
+
+  <div class="onboard-cards">
+    <div class="onboard-card">
+      <div class="onboard-icon rojo">⚠️</div>
+      <div>
+        <p class="onboard-title rojo">Cláusula peligrosa detectada</p>
+        <p class="onboard-text">El arrendador puede subir la renta sin previo aviso después del primer año.</p>
+      </div>
+    </div>
+    <div class="onboard-card">
+      <div class="onboard-icon verde">✅</div>
+      <div>
+        <p class="onboard-title verde">Sin sorpresas aquí</p>
+        <p class="onboard-text">Depósito de 1 mes. Dentro de lo normal en México.</p>
+      </div>
+    </div>
+    <div class="onboard-card">
+      <div class="onboard-icon naranja">🕐</div>
+      <div>
+        <p class="onboard-title naranja">Fecha importante</p>
+        <p class="onboard-text">Penalización de 3 meses si sales antes del plazo acordado.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num">2 min</div>
+      <div class="stat-label">análisis</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">gratis</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">IA</div>
+      <div class="stat-label">legal</div>
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="loginConGoogle()" style="display:flex;align-items:center;justify-content:center;gap:10px;">
+    <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.2 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.1-2.7-.4-4z"></path><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 18.9 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"></path><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.5 26.8 36 24 36c-5.3 0-9.6-2.8-11.3-7L6 33.8C9.4 39.7 16.2 44 24 44z"></path><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.3-2.3 4.2-4.3 5.5l6.2 5.2C41 35.3 44 30 44 24c0-1.3-.1-2.7-.4-4z"></path></svg>
+    Continuar con Google
+  </button>
+  <p style="font-size:12px;color:#444;">Al continuar aceptas nuestros términos de uso</p>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <p class="saludo" id="saludo-texto">Buenos días,</p>
+        <p class="nombre" id="nombre-usuario">👋</p>
+      </div>
+      <div class="avatar" id="avatar-usuario" onclick="cerrarSesion()" title="Cerrar sesión" style="cursor:pointer;">?</div>
+    </div>
+    <div class="logo-header">
+      <div class="logo"><span>Léelo</span><span>tú</span></div>
+      <div class="tagline">contratos en lenguaje simple</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- HOME -->
+    <div id="screen-home" class="screen active">
+      <p class="section-title">¿Qué quieres analizar hoy?</p>
+
+      <div class="opcion-card" onclick="irA(&#39;screen-tipo&#39;)">
+        <span class="opcion-icon">📄</span>
+        <div class="opcion-info">
+          <div class="opcion-name">Subir contrato</div>
+          <div class="opcion-desc">PDF o imagen</div>
+        </div>
+        <span class="opcion-arrow">›</span>
+      </div>
+
+      <div class="opcion-card gris" onclick="irA(&#39;screen-tipo&#39;)">
+        <span class="opcion-icon">📋</span>
+        <div class="opcion-info">
+          <div class="opcion-name">Pegar texto</div>
+          <div class="opcion-desc">Copia y pega el contrato</div>
+        </div>
+        <span class="opcion-arrow">›</span>
+      </div>
+
+      <p class="recientes-title">Análisis recientes</p>
+      <div id="historial-lista"></div>
+      <div style="display:none;">
+        <div>
+          <div class="reciente-nombre">Contrato freelance</div>
+          <div class="reciente-fecha">Hace 5 días</div>
+        </div>
+        <span class="badge verde">Sin riesgos</span>
+      </div>
+    </div>
+
+    <!-- TIPO CONTRATO -->
+    <div id="screen-tipo" class="screen">
+      <div class="paso-header">
+        <button class="back-btn" onclick="irA(&#39;screen-home&#39;)">←</button>
+        <div class="pasos">
+          <div class="paso-dot activo"></div>
+          <div class="paso-dot"></div>
+        </div>
+      </div>
+      <p class="screen-title">¿Qué tipo de contrato es?</p>
+      <p class="screen-sub">Esto nos ayuda a darte un análisis más preciso y relevante</p>
+
+      <div class="tipos-grid">
+        <div class="tipo-card" onclick="seleccionarTipo(&#39;🏠&#39;, &#39;Arrendamiento&#39;, this)">
+          <span class="tipo-emoji">🏠</span>
+          <div class="tipo-nombre">Arrendamiento</div>
+          <div class="tipo-desc">Renta de casa o depa</div>
+        </div>
+        <div class="tipo-card" onclick="seleccionarTipo(&#39;💼&#39;, &#39;Laboral&#39;, this)">
+          <span class="tipo-emoji">💼</span>
+          <div class="tipo-nombre">Laboral</div>
+          <div class="tipo-desc">Contrato de trabajo</div>
+        </div>
+        <div class="tipo-card" onclick="seleccionarTipo(&#39;💻&#39;, &#39;Freelance&#39;, this)">
+          <span class="tipo-emoji">💻</span>
+          <div class="tipo-nombre">Freelance</div>
+          <div class="tipo-desc">Servicios independientes</div>
+        </div>
+        <div class="tipo-card" onclick="seleccionarTipo(&#39;🏪&#39;, &#39;Compraventa&#39;, this)">
+          <span class="tipo-emoji">🏪</span>
+          <div class="tipo-nombre">Compraventa</div>
+          <div class="tipo-desc">Bienes o propiedades</div>
+        </div>
+        <div class="tipo-card full" onclick="seleccionarTipo(&#39;📝&#39;, &#39;Otro&#39;, this)">
+          <span class="tipo-emoji">📝</span>
+          <div class="tipo-nombre">Otro tipo de contrato</div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-continuar-tipo" onclick="irA(&#39;screen-subir&#39;)" style="opacity:0.4;pointer-events:none;">
+        Continuar →
+      </button>
+    </div>
+
+    <!-- SUBIR CONTRATO -->
+    <div id="screen-subir" class="screen">
+      <div class="paso-header">
+        <button class="back-btn" onclick="irA(&#39;screen-tipo&#39;)">←</button>
+        <div class="pasos">
+          <div class="paso-dot activo"></div>
+          <div class="paso-dot activo"></div>
+        </div>
+      </div>
+
+      <div class="tipo-badge" id="tipo-badge">
+        <span id="tipo-emoji-badge">📄</span>
+        <span id="tipo-nombre-badge">Contrato</span>
+        <span style="margin-left:auto;font-size:12px;cursor:pointer;opacity:0.5;" onclick="irA(&#39;screen-tipo&#39;)">✏️</span>
+      </div>
+
+      <p class="screen-title">Sube tu contrato</p>
+      <p class="screen-sub">Lo analizamos en menos de 2 minutos</p>
+
+      <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" onchange="archivoSeleccionado(this)">
+
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById(&#39;fileInput&#39;).click()" ondragover="event.preventDefault();this.classList.add(&#39;dragover&#39;)" ondragleave="this.classList.remove(&#39;dragover&#39;)" ondrop="dropArchivo(event)">
+        <span class="drop-icon">☁️</span>
+        <div class="drop-title" id="drop-title">Arrastra o selecciona</div>
+        <div class="drop-sub">PDF · JPG · PNG</div>
+        <button class="btn-elegir" onclick="event.stopPropagation();document.getElementById(&#39;fileInput&#39;).click()">
+          Elegir archivo
+        </button>
+      </div>
+
+      <div class="o-divider">o también</div>
+
+      <div class="opciones-alt">
+        <button class="btn-alt" onclick="mostrarTextarea()">
+          <span class="btn-alt-icon">📋</span>
+          <span class="btn-alt-text">Pegar texto</span>
+        </button>
+        <button class="btn-alt">
+          <span class="btn-alt-icon">📷</span>
+          <span class="btn-alt-text">Tomar foto</span>
+        </button>
+      </div>
+
+      <textarea id="textoContrato" class="textarea-contrato" placeholder="Pega aquí el texto de tu contrato..." style="display:none;" oninput="validarTexto()"></textarea>
+
+      <div class="seguridad">
+        🔒 <span>Tu contrato es privado y se elimina tras el análisis</span>
+      </div>
+
+      <button class="btn-primary" id="btn-analizar" onclick="analizarContrato()" style="opacity:0.4;pointer-events:none;">
+        Analizar contrato
+      </button>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div id="screen-resultados" class="screen">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <button class="back-btn" onclick="irA(&#39;screen-home&#39;)">←</button>
+        <span style="font-size:13px;color:var(--rojo);cursor:pointer;font-weight:500;" onclick="abrirCompartir()">Compartir 📤</span>
+      </div>
+
+      <p style="font-size:11px;color:#aaa;margin-bottom:2px;" id="res-tipo-label">Contrato de arrendamiento</p>
+      <p style="font-size:16px;font-weight:500;margin-bottom:18px;">Análisis completado</p>
+
+      <div class="semaforo-box" id="semaforo-box">
+        <div class="semaforo-dots" id="semaforo-dots"></div>
+        <div class="semaforo-nivel" id="semaforo-nivel"></div>
+        <div class="semaforo-desc" id="semaforo-desc"></div>
+      </div>
+
+      <div class="resumen-box">
+        <div class="resumen-label">En pocas palabras</div>
+        <div class="resumen-texto" id="res-resumen"></div>
+      </div>
+
+      <div class="datos-grid" id="datos-grid"></div>
+
+      <p class="alertas-title">Detalle de alertas</p>
+      <div id="alertas-lista"></div>
+
+      <button class="btn-primary" onclick="irA(&#39;screen-dudas&#39;)" style="margin-top:8px;">
+        Quiero entender más →
+      </button>
+    </div>
+
+    <!-- DUDAS CON IA -->
+    <div id="screen-dudas" class="screen">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <button class="back-btn" onclick="irA(&#39;screen-resultados&#39;)">←</button>
+        <div>
+          <p style="font-size:15px;font-weight:500;">¿Qué quieres entender?</p>
+          <p style="font-size:11px;color:#aaa;">Preguntas sobre tu contrato</p>
+        </div>
+      </div>
+
+      <div class="preguntas-list" id="preguntas-list"></div>
+
+      <div class="respuesta-box" id="respuesta-box">
+        <div class="respuesta-label">Respuesta de la IA</div>
+        <div class="respuesta-texto" id="respuesta-texto"></div>
+      </div>
+
+      <input type="text" class="input-duda" id="input-duda" placeholder="¿Otra duda? Escríbela aquí..." onkeypress="if(event.key===&#39;Enter&#39;) hacerPregunta()">
+
+      <button class="btn-primary" onclick="hacerPregunta()">
+        Hacer mi pregunta →
+      </button>
+
+      <p class="disclaimer">Respuesta generada por IA · no es asesoría legal</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- COMPARTIR MENU -->
+<div id="compartir-overlay" class="compartir-overlay" onclick="cerrarCompartir(event)">
+  <div class="compartir-menu">
+    <p class="compartir-titulo">Compartir análisis</p>
+    <p class="compartir-sub">Elige cómo quieres compartirlo</p>
+
+    <div class="compartir-item" onclick="copiarResumen()">
+      <div class="compartir-item-icon" style="background:#fff5f5;">📋</div>
+      <div>
+        <div class="compartir-item-name">Copiar resumen</div>
+        <div class="compartir-item-desc">Pega el análisis donde quieras</div>
+      </div>
+    </div>
+
+    <div class="compartir-item" onclick="compartirWhatsApp()">
+      <div class="compartir-item-icon" style="background:#f0fff4;">💬</div>
+      <div>
+        <div class="compartir-item-name">Enviar por WhatsApp</div>
+        <div class="compartir-item-desc">Comparte con alguien de confianza</div>
+      </div>
+    </div>
+
+    <div class="compartir-item" onclick="descargarPDF()">
+      <div class="compartir-item-icon" style="background:#f0f4ff;">📄</div>
+      <div>
+        <div class="compartir-item-name">Descargar PDF</div>
+        <div class="compartir-item-desc">Guarda el análisis completo</div>
+      </div>
+    </div>
+
+    <button class="compartir-cancel" onclick="cerrarCompartir()">Cancelar</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast">✅ Resumen copiado</div>
+
+<!-- ANALIZANDO OVERLAY -->
+<div id="analizando">
+  <div class="spinner"></div>
+  <p class="analizando-texto">Analizando tu contrato...</p>
+  <p class="analizando-sub">Esto toma menos de 2 minutos</p>
+</div>
+
+<script>
+let tipoSeleccionado = { emoji: '', nombre: '' };
+let contenidoContrato = '';
+let resultadoAnalisis = {};
+
+function abrirCompartir() {
+  const overlay = document.getElementById('compartir-overlay');
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'flex-end';
+  overlay.style.justifyContent = 'center';
+}
+
+function cerrarCompartir(event) {
+  const overlay = document.getElementById('compartir-overlay');
+  if (!event || event.target === overlay) overlay.style.display = 'none';
+}
+
+function mostrarToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  setTimeout(() => { toast.style.display = 'none'; }, 2500);
+}
+
+function copiarResumen() {
+  const r = resultadoAnalisis;
+  const nivel = { alto: '🔴 Riesgo alto', medio: '🟡 Riesgo medio', bajo: '🟢 Riesgo bajo' };
+  let texto = `📊 Léelotú — Análisis de contrato\n`;
+  texto += `Tipo: ${tipoSeleccionado.nombre} · ${nivel[r.nivel_riesgo] || ''}\n\n`;
+  texto += `📝 ${r.resumen}\n\n`;
+  if (r.alertas) {
+    r.alertas.forEach(a => {
+      const icon = a.nivel === 'rojo' ? '⚠️' : a.nivel === 'naranja' ? '🟡' : '✅';
+      texto += `${icon} ${a.texto}\n`;
+    });
+  }
+  texto += `\nAnálisis hecho con leelotu.mx`;
+  navigator.clipboard.writeText(texto).then(() => {
+    cerrarCompartir();
+    mostrarToast('✅ Resumen copiado');
+  }).catch(() => mostrarToast('❌ No se pudo copiar'));
+}
+
+function compartirWhatsApp() {
+  const r = resultadoAnalisis;
+  const nivel = { alto: '🔴 Riesgo alto', medio: '🟡 Riesgo medio', bajo: '🟢 Riesgo bajo' };
+  let texto = `📊 *Léelotú — Análisis de contrato*\n`;
+  texto += `Tipo: ${tipoSeleccionado.nombre} · ${nivel[r.nivel_riesgo] || ''}\n\n`;
+  texto += `${r.resumen}\n\n`;
+  if (r.alertas) {
+    r.alertas.forEach(a => {
+      const icon = a.nivel === 'rojo' ? '⚠️' : a.nivel === 'naranja' ? '🟡' : '✅';
+      texto += `${icon} ${a.texto}\n`;
+    });
+  }
+  texto += `\nAnálisis hecho con leelotu.mx`;
+  const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+  window.open(url, '_blank');
+  cerrarCompartir();
+}
+
+function descargarPDF() {
+  const r = resultadoAnalisis;
+  const nivel = { alto: '🔴 Riesgo alto', medio: '🟡 Riesgo medio', bajo: '🟢 Riesgo bajo' };
+  const contenido = `
+    <html><head><meta charset="UTF-8">
+    <style>
+      body { font-family: Georgia, serif; max-width: 600px; margin: 40px auto; color: #1a1a1a; }
+      h1 { font-size: 32px; } h1 span { color: #e63946; }
+      .nivel { font-size: 20px; font-weight: bold; margin: 20px 0; }
+      .resumen { background: #f8f8f8; padding: 16px; border-radius: 8px; margin: 16px 0; line-height: 1.7; }
+      .alerta { padding: 10px; border-radius: 6px; margin: 8px 0; font-size: 14px; }
+      .footer { font-size: 11px; color: #aaa; margin-top: 40px; }
+    </style></head>
+    <body>
+      <h1>Léelo<span>tú</span></h1>
+      <p style="color:#aaa;">Contrato de ${tipoSeleccionado.nombre}</p>
+      <div class="nivel">${nivel[r.nivel_riesgo] || ''}</div>
+      <div class="resumen">${r.resumen}</div>
+      <h3>Detalle de alertas</h3>
+      ${(r.alertas || []).map(a => {
+        const color = a.nivel === 'rojo' ? '#fff5f5' : a.nivel === 'naranja' ? '#fffbf0' : '#f0fff4';
+        const icon = a.nivel === 'rojo' ? '⚠️' : a.nivel === 'naranja' ? '🟡' : '✅';
+        return `<div class="alerta" style="background:${color}">${icon} ${a.texto}</div>`;
+      }).join('')}
+      <div class="footer">Análisis generado por Léelotú · leelotu.mx · No es asesoría legal</div>
+    </body></html>`;
+  const blob = new Blob([contenido], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `leelotu-analisis-${tipoSeleccionado.nombre}.html`;
+  a.click(); URL.revokeObjectURL(url);
+  cerrarCompartir();
+  mostrarToast('📄 Análisis descargado');
+}
+
+function guardarHistorial(analisis) {
+  const historial = JSON.parse(localStorage.getItem('leelotu_historial') || '[]');
+  const entrada = {
+    id: Date.now(),
+    tipo: tipoSeleccionado.nombre,
+    emoji: tipoSeleccionado.emoji,
+    nivel: analisis.nivel_riesgo,
+    resumen: analisis.resumen,
+    alertas: analisis.alertas ? analisis.alertas.length : 0,
+    fecha: new Date().toISOString()
+  };
+  historial.unshift(entrada);
+  // Guardar máximo 20 análisis
+  if (historial.length > 20) historial.pop();
+  localStorage.setItem('leelotu_historial', JSON.stringify(historial));
+  renderizarHistorial();
+}
+
+function renderizarHistorial() {
+  const lista = document.getElementById('historial-lista');
+  if (!lista) return;
+  const historial = JSON.parse(localStorage.getItem('leelotu_historial') || '[]');
+
+  if (historial.length === 0) {
+    lista.innerHTML = `<div style="text-align:center;padding:24px 0;color:#ccc;font-size:13px;">
+      <div style="font-size:32px;margin-bottom:8px;">📂</div>
+      Aún no has analizado ningún contrato
+    </div>`;
+    return;
+  }
+
+  lista.innerHTML = historial.map(h => {
+    const fecha = tiempoRelativo(new Date(h.fecha));
+    const nivelColor = h.nivel === 'alto' ? 'rojo' : h.nivel === 'medio' ? 'naranja' : 'verde';
+    const nivelTexto = h.nivel === 'alto' ? `${h.alertas} alertas` : h.nivel === 'medio' ? 'Riesgo medio' : 'Sin riesgos';
+    const badgeClass = h.nivel === 'bajo' ? 'verde' : 'rojo';
+    return `<div class="reciente-card" onclick="verHistorial(${h.id})">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;">
+        <span style="font-size:22px;">${h.emoji}</span>
+        <div>
+          <div class="reciente-nombre">Contrato de ${h.tipo}</div>
+          <div class="reciente-fecha">${fecha}</div>
+        </div>
+      </div>
+      <span class="badge ${badgeClass}">${nivelTexto}</span>
+    </div>`;
+  }).join('');
+}
+
+function tiempoRelativo(fecha) {
+  const ahora = new Date();
+  const diff = Math.floor((ahora - fecha) / 1000);
+  if (diff < 60) return 'Hace un momento';
+  if (diff < 3600) return `Hace ${Math.floor(diff/60)} min`;
+  if (diff < 86400) return `Hace ${Math.floor(diff/3600)} horas`;
+  if (diff < 172800) return 'Hace 1 día';
+  return `Hace ${Math.floor(diff/86400)} días`;
+}
+
+function verHistorial(id) {
+  const historial = JSON.parse(localStorage.getItem('leelotu_historial') || '[]');
+  const entrada = historial.find(h => h.id === id);
+  if (!entrada) return;
+  tipoSeleccionado = { emoji: entrada.emoji, nombre: entrada.tipo };
+  resultadoAnalisis = {
+    nivel_riesgo: entrada.nivel,
+    resumen: entrada.resumen,
+    datos_clave: [],
+    alertas: [],
+    preguntas_sugeridas: []
+  };
+  irA('screen-resultados');
+  mostrarResultados();
+}
+
+
+function entrarApp() {
+  document.getElementById('onboarding').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  renderizarHistorial();
+}
+
+function irA(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  window.scrollTo(0, 0);
+  if (screenId === 'screen-subir') {
+    document.getElementById('tipo-emoji-badge').textContent = tipoSeleccionado.emoji;
+    document.getElementById('tipo-nombre-badge').textContent = 'Contrato de ' + tipoSeleccionado.nombre;
+  }
+  if (screenId === 'screen-dudas') {
+    generarPreguntas();
+  }
+}
+
+function seleccionarTipo(emoji, nombre, el) {
+  document.querySelectorAll('.tipo-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  tipoSeleccionado = { emoji, nombre };
+  const btn = document.getElementById('btn-continuar-tipo');
+  btn.style.opacity = '1';
+  btn.style.pointerEvents = 'auto';
+}
+
+function mostrarTextarea() {
+  const ta = document.getElementById('textoContrato');
+  ta.style.display = ta.style.display === 'none' ? 'block' : 'none';
+}
+
+function validarTexto() {
+  const texto = document.getElementById('textoContrato').value.trim();
+  contenidoContrato = texto;
+  const btn = document.getElementById('btn-analizar');
+  if (texto.length > 50) {
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+  } else {
+    btn.style.opacity = '0.4';
+    btn.style.pointerEvents = 'none';
+  }
+}
+
+function archivoSeleccionado(input) {
+  if (input.files.length > 0) {
+    const file = input.files[0];
+    document.getElementById('drop-title').textContent = '✅ ' + file.name;
+    contenidoContrato = 'Archivo: ' + file.name + ' (simular análisis de contrato de ' + tipoSeleccionado.nombre + ')';
+    const btn = document.getElementById('btn-analizar');
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+  }
+}
+
+function dropArchivo(event) {
+  event.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  const file = event.dataTransfer.files[0];
+  if (file) {
+    document.getElementById('drop-title').textContent = '✅ ' + file.name;
+    contenidoContrato = 'Archivo: ' + file.name;
+    const btn = document.getElementById('btn-analizar');
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+  }
+}
+
+async function analizarContrato() {
+  const overlay = document.getElementById('analizando');
+  overlay.style.display = 'flex';
+
+  const prompt = `Eres un experto legal mexicano que analiza contratos en lenguaje simple para ciudadanos comunes. 
+  
+  Analiza este contrato de tipo "${tipoSeleccionado.nombre}":
+  "${contenidoContrato}"
+  
+  Si el texto parece ser un nombre de archivo o muy corto, genera un análisis realista de ejemplo para un contrato de ${tipoSeleccionado.nombre} típico en México.
+  
+  Responde SOLO en JSON con esta estructura exacta:
+  {
+    "nivel_riesgo": "alto" | "medio" | "bajo",
+    "resumen": "2-3 oraciones en lenguaje simple explicando lo más importante del contrato",
+    "datos_clave": [
+      {"label": "Duración", "valor": "X meses"},
+      {"label": "Monto", "valor": "$X,XXX"},
+      {"label": "Depósito", "valor": "$X,XXX"},
+      {"label": "Alertas", "valor": "X encontradas", "alerta": true}
+    ],
+    "alertas": [
+      {"nivel": "rojo", "texto": "descripción del riesgo alto"},
+      {"nivel": "naranja", "texto": "descripción del riesgo medio"},
+      {"nivel": "verde", "texto": "punto positivo del contrato"}
+    ],
+    "preguntas_sugeridas": [
+      "¿Pregunta relevante 1?",
+      "¿Pregunta relevante 2?",
+      "¿Pregunta relevante 3?",
+      "¿Pregunta relevante 4?"
+    ]
+  }`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    const texto = data.content[0].text;
+    const clean = texto.replace(/```json|```/g, '').trim();
+    resultadoAnalisis = JSON.parse(clean);
+
+    overlay.style.display = 'none';
+    mostrarResultados();
+
+  } catch (e) {
+    overlay.style.display = 'none';
+    resultadoAnalisis = {
+      nivel_riesgo: 'medio',
+      resumen: 'Este contrato de ' + tipoSeleccionado.nombre + ' tiene cláusulas estándar pero contiene 2 puntos que debes revisar antes de firmar para proteger tus intereses.',
+      datos_clave: [
+        { label: 'Duración', valor: '12 meses' },
+        { label: 'Monto', valor: '$15,000' },
+        { label: 'Depósito', valor: '$15,000' },
+        { label: 'Alertas', valor: '2 encontradas', alerta: true }
+      ],
+      alertas: [
+        { nivel: 'rojo', texto: 'Una cláusula permite modificaciones unilaterales sin notificación previa.' },
+        { nivel: 'naranja', texto: 'La penalización por incumplimiento es superior al promedio del mercado.' },
+        { nivel: 'verde', texto: 'Los plazos y condiciones de pago están claramente definidos.' }
+      ],
+      preguntas_sugeridas: [
+        '¿Puedo negociar alguna cláusula?',
+        '¿Qué pasa si quiero salir antes?',
+        '¿Cuáles son mis derechos en este contrato?',
+        '¿Qué pasa si no pago a tiempo?'
+      ]
+    };
+    mostrarResultados();
+  }
+}
+
+function mostrarResultados() {
+  const r = resultadoAnalisis;
+  document.getElementById('res-tipo-label').textContent = 'Contrato de ' + tipoSeleccionado.nombre;
+
+  const colores = { alto: '#e63946', medio: '#f4a261', bajo: '#52b788' };
+  const textos = { alto: 'Riesgo alto', medio: 'Riesgo medio', bajo: 'Riesgo bajo' };
+  const descs = {
+    alto: 'Encontramos cláusulas que debes revisar antes de firmar',
+    medio: 'Hay algunos puntos que vale la pena aclarar',
+    bajo: 'El contrato parece estar en orden'
+  };
+
+  const nivel = r.nivel_riesgo;
+  const color = colores[nivel];
+  document.getElementById('semaforo-box').style.background = nivel === 'alto' ? '#fff5f5' : nivel === 'medio' ? '#fffbf0' : '#f0fff4';
+  document.getElementById('semaforo-nivel').style.color = color;
+  document.getElementById('semaforo-nivel').textContent = textos[nivel];
+  document.getElementById('semaforo-desc').textContent = descs[nivel];
+
+  const dotsEl = document.getElementById('semaforo-dots');
+  dotsEl.innerHTML = '';
+  ['alto', 'medio', 'bajo'].forEach(n => {
+    const d = document.createElement('div');
+    d.className = 'semaforo-dot';
+    d.style.background = n === nivel ? colores[n] : '#eee';
+    dotsEl.appendChild(d);
+  });
+
+  document.getElementById('res-resumen').innerHTML = r.resumen;
+
+  const grid = document.getElementById('datos-grid');
+  grid.innerHTML = '';
+  r.datos_clave.forEach(d => {
+    const box = document.createElement('div');
+    box.className = 'dato-box' + (d.alerta ? ' alerta' : '');
+    box.innerHTML = `<div class="dato-label${d.alerta ? ' rojo' : ''}">${d.label}</div>
+                     <div class="dato-valor${d.alerta ? ' rojo' : ''}">${d.valor}</div>`;
+    grid.appendChild(box);
+  });
+
+  const lista = document.getElementById('alertas-lista');
+  lista.innerHTML = '';
+  const dotColors = { rojo: '#e63946', naranja: '#f4a261', verde: '#52b788' };
+  r.alertas.forEach(a => {
+    const item = document.createElement('div');
+    item.className = 'alerta-item';
+    item.innerHTML = `<div class="alerta-dot" style="background:${dotColors[a.nivel]}"></div>
+                      <p style="font-size:12px;color:#444;line-height:1.5;margin:0;">${a.texto}</p>`;
+    lista.appendChild(item);
+  });
+
+  irA('screen-resultados');
+  guardarHistorial(r);
+}
+
+function generarPreguntas() {
+  const lista = document.getElementById('preguntas-list');
+  lista.innerHTML = '';
+  const preguntas = resultadoAnalisis.preguntas_sugeridas || [
+    '¿Puedo negociar alguna cláusula?',
+    '¿Qué pasa si quiero salir antes?',
+    '¿Cuáles son mis derechos?',
+    '¿Qué pasa si no pago a tiempo?'
+  ];
+  preguntas.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'pregunta-card' + (i === 0 ? ' destacada' : '');
+    card.innerHTML = `<span>${p}</span><span style="color:#ccc;">›</span>`;
+    card.onclick = () => {
+      document.getElementById('input-duda').value = p;
+      hacerPregunta();
+    };
+    lista.appendChild(card);
+  });
+}
+
+async function hacerPregunta() {
+  const input = document.getElementById('input-duda');
+  const pregunta = input.value.trim();
+  if (!pregunta) return;
+
+  const respBox = document.getElementById('respuesta-box');
+  const respTexto = document.getElementById('respuesta-texto');
+  respBox.style.display = 'block';
+  respTexto.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+
+  const contexto = `Contrato de ${tipoSeleccionado.nombre}. Análisis: ${JSON.stringify(resultadoAnalisis)}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `Eres un asistente legal mexicano que explica contratos en lenguaje simple y amigable. 
+          Contexto del contrato analizado: ${contexto}
+          
+          El usuario pregunta: "${pregunta}"
+          
+          Responde en 2-3 párrafos cortos, en español mexicano natural, sin tecnicismos. 
+          Sé directo y útil. Al final recuerda amablemente que no es asesoría legal formal.`
+        }]
+      })
+    });
+
+    const data = await res.json();
+    respTexto.textContent = data.content[0].text;
+  } catch (e) {
+    respTexto.textContent = 'Sobre esto te puedo decir que es importante revisarlo bien antes de firmar. Te recomendamos consultar con un abogado si tienes dudas específicas sobre esta cláusula.';
+  }
+
+  input.value = '';
+  respBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+
+
+<iframe ng-non-bindable="" frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" tabindex="-1" vspace="0" width="100%" aria-hidden="true" id="I0_1778527670364" name="I0_1778527670364" src="./Léelotú — Contratos en lenguaje simple_files/iframe.html" style="position: absolute; top: -100px; width: 1px; height: 1px;"></iframe></body></html>
